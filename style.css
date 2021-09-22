@@ -29,9 +29,9 @@ nav a {
 }
 
 #pong2d:hover {
-    text-shadow: -10px -10px palevioletred;
+    text-shadow: -.65rem -.65rem palevioletred;
 }
 
 #pong3d:hover {
-    text-shadow: 10px 10px turquoise;
+    text-shadow: .65rem .65rem turquoise;
 }
