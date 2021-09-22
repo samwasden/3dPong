@@ -1,16 +1,20 @@
 const scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x000000 );
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, .1, 1000 );
 
+// top view //
 
-camera.position.z = 110;
-camera.position.y = 90;
-camera.position.x = 0;
-camera.rotation.x = -.9;
+// const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, .1, 1000 );
+// camera.position.z = 110;
+// camera.position.y = 90;
+// camera.position.x = 0;
+// camera.rotation.x = -.9;
 
-// camera.position.z = 140;
-// camera.position.y = 31;
-// camera.rotation.x = 0;
+// player view //
+
+const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, .1, 1000 );
+camera.position.z = 180;
+camera.position.y = 0;
+camera.rotation.x = 0;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -43,6 +47,8 @@ function returnNeonColor() {
 
 let leftPressed;
 let rightPressed;
+let upPressed;
+let downPressed;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -55,6 +61,14 @@ function keyDownHandler(e) {
     else if (e.key == "Right" || e.key == "ArrowRight") {
         e.preventDefault()
         rightPressed = true;
+    } 
+    else if (e.key == "Up" || e.key == "ArrowUp") {
+        e.preventDefault()
+        upPressed = true;
+    }
+    else if (e.key == "Down" || e.key == "ArrowDown") {
+        e.preventDefault()
+        downPressed = true;
     }
 }
 
@@ -66,6 +80,13 @@ function keyUpHandler(e) {
     else if (e.key == "Right" || e.key == "ArrowRight") {
         e.preventDefault()
         rightPressed = false;
+    } else if (e.key == "Up" || e.key == "ArrowUp") {
+        e.preventDefault()
+        upPressed = false;
+    }
+    else if (e.key == "Down" || e.key == "ArrowDown") {
+        e.preventDefault()
+        downPressed = false;
     }
 }
 
@@ -83,24 +104,42 @@ let userScore;
 let cpuScore;
 let ball;
 let ballLength = 2;
-let rx = 1;
-let rz = 1;
+let rx;
+let rz;
+let ry;
 let paddleWidth = 20;
-let paddleHeight = 8;
+let paddleHeight = 12;
 let paddleLength = 2;
 let wallWidth = 4;
+let wallHeight = 64;
 let boardLength = 200;
 let boardWidth = 120;
 let playerScore = 0;
 let computerScore = 0;
+let playerSpeed = .75;
+let cpuSpeed = .5;
+let ballSpeed = 2;
 let animator;
 
+function negatizer() {
+    return Math.random() > .5 ? 1 : -1 
+}
+
 function setPoint() {
-    rx = 1;
-    rz = 1;
-    playerTurn = true;
+    rx = (ballSpeed/3) * negatizer();
+    rz = (ballSpeed/3) * negatizer();
+    ry = (ballSpeed/3) * negatizer();
+    playerTurn = rz > 0 ? true : false;
     ball.position.x = 0;
     ball.position.z = 0;
+    ball.position.y = 0;
+    userPaddle.position.z = boardLength/2-1
+    userPaddle.position.x = 0
+    userPaddle.position.y = 0
+    cpuPaddle.position.z = -(boardLength/2-1)
+    cpuPaddle.position.x = 0
+    cpuPaddle.position.y = 0
+
 }
 
 function scoreBoard(score) {
@@ -124,7 +163,7 @@ function createWalls() {
 }
 
 function createWall() {
-    let wGeometry = new THREE.BoxGeometry(wallWidth, 10, boardLength);
+    let wGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, boardLength);
     let wMaterial = new THREE.MeshLambertMaterial( {color: 'white'} )
     let wall = new THREE.Mesh( wGeometry, wMaterial );
     return wall
@@ -133,8 +172,6 @@ function createWall() {
 function createPaddles() {
     userPaddle = createPaddle()
     userPaddle.position.z += boardLength/2-1
-    userPaddle.material.transparent = true;
-    userPaddle.material.opacity = .75;
     cpuPaddle = createPaddle()
     cpuPaddle.position.z -= boardLength/2-1
     scene.add( userPaddle, cpuPaddle )
@@ -142,7 +179,7 @@ function createPaddles() {
 
 function createPaddle() {
     let pGeometry = new THREE.BoxGeometry( paddleWidth, paddleHeight, paddleLength );
-    let pMaterial = new THREE.MeshLambertMaterial( {color: 'white'} )
+    let pMaterial = new THREE.MeshLambertMaterial( {color: 'white', transparent: true, opacity: .75 } )
     let paddle = new THREE.Mesh( pGeometry, pMaterial );
     return paddle
 }
@@ -157,13 +194,13 @@ function createBall() {
 
 function createScoreboard() {
     userScore = scoreBoard(playerScore.toString())
-    userScore.position.x += boardLength/2-20
-    userScore.position.z += 20
-    userScore.rotation.x = -1.5708
+    userScore.position.x += 20
+    userScore.position.y -= 18
+    userScore.position.z -= boardLength/2 + 10
     cpuScore = scoreBoard(computerScore.toString())
-    cpuScore.position.x -= boardLength/2-4
-    cpuScore.position.z += 20
-    cpuScore.rotation.x = -1.5708
+    cpuScore.position.x -= 38
+    cpuScore.position.y -= 18
+    cpuScore.position.z -= boardLength/2 + 10
 
     scene.add( userScore, cpuScore )
 }
@@ -175,14 +212,15 @@ function createMark() {
     return mark;
 }
 
-function createMarks() {
-    let markGroup = new THREE.Group();
+function createMarks(multiplier) {
+    let markGroup1 = new THREE.Group();
     for (let i=-7; i<8; i++) {
         let newMark = createMark()
         newMark.position.x = (boardWidth/16) * i
-        markGroup.add(newMark)
+        markGroup1.add(newMark)
     }
-    scene.add(markGroup)
+    markGroup1.position.y = (wallHeight/2 - boardWidth/36) * multiplier
+    scene.add(markGroup1)
 }
 
 function setScore(winner) {
@@ -196,9 +234,35 @@ function setScore(winner) {
 
 }
 
+function createBackWalls() {
+    let playBottom = createGoal()
+    let playTop = createGoal()
+    let cpuBottom = createGoal()
+    let cpuTop = createGoal()
+    playBottom.position.z += boardLength/2 - .5
+    playBottom.position.y -= wallHeight/2 - .5
+    playTop.position.z += boardLength/2 - .5
+    playTop.position.y += wallHeight/2 - .5
+    cpuBottom.position.z -= boardLength/2 - .5
+    cpuBottom.position.y -= wallHeight/2 - .5
+    cpuTop.position.z -= boardLength/2 - .5
+    cpuTop.position.y += wallHeight/2 - .5
+
+    scene.add(playBottom, playTop, cpuBottom, cpuTop)
+}
+
+function createGoal() {
+    let gGeometry = new THREE.BoxGeometry(boardWidth, 1, 1)
+    let gMaterial = new THREE.MeshLambertMaterial( {color: 'white'} )
+    let goal = new THREE.Mesh(gGeometry, gMaterial)
+    return goal
+}
+
 function createGame() {
     createWalls()
-    createMarks()
+    createBackWalls()
+    createMarks(-1)
+    createMarks(1)
     createPaddles()
     createBall()
     setPoint()
@@ -207,10 +271,16 @@ function createGame() {
 
 function playerController() {
     if (rightPressed && userPaddle.position.x + paddleWidth/2 <= boardWidth/2) {
-        userPaddle.position.x += 1
+        userPaddle.position.x += playerSpeed
     }
     if (leftPressed && userPaddle.position.x - paddleWidth/2 >= -(boardWidth/2)) {
-        userPaddle.position.x -= 1
+        userPaddle.position.x -= playerSpeed
+    }
+    if (upPressed && userPaddle.position.y + paddleHeight/2 < wallHeight/2) {
+        userPaddle.position.y += playerSpeed
+    }
+    if (downPressed && userPaddle.position.y - paddleHeight/2 > -(wallHeight/2)) {
+        userPaddle.position.y -= playerSpeed
     }
 }
 
@@ -218,16 +288,50 @@ function ballController() {
     if (ball.position.x + ballLength/2 >= boardWidth/2 || ball.position.x - ballLength/2 <= -boardWidth/2) {
         rx = -rx
     }
-    if (ball.position.z + ballLength/2 === userPaddle.position.z - paddleLength/2 &&
+    if (ball.position.y + ballLength/2 >= wallHeight/2 || ball.position.y - ballLength/2 <= -wallHeight/2) {
+        ry = -ry
+    }
+    if (ball.position.z + ballLength/2 >= userPaddle.position.z - paddleLength/2 &&
         ball.position.x >= userPaddle.position.x - paddleWidth/2 &&
-        ball.position.x <= userPaddle.position.x + paddleWidth/2) {
-            rz = -rz
+        ball.position.x <= userPaddle.position.x + paddleWidth/2 &&
+        ball.position.y >= userPaddle.position.y - paddleHeight/2 &&
+        ball.position.y <= userPaddle.position.y + paddleHeight/2) {
+            let xd = (ball.position.x - userPaddle.position.x)/6
+            let xy = (ball.position.y - userPaddle.position.y)/4
+            if (xd === 0) {
+                xd = .5 * negatizer()
+            }
+            if (xy === 0) {
+                xy = .5 * negatizer()
+            }
+            let xz = (Math.abs(xd) + Math.abs(xy))
+            let percent = (ballSpeed/(Math.abs(xd)+Math.abs(xy)+xz))
+            rx = xd * percent
+            ry = xy * percent
+            rz = -(xz * percent)
+
             playerTurn = false;
         }
-    if (ball.position.z - ballLength/2 === cpuPaddle.position.z + paddleLength/2 &&
+
+    if (ball.position.z - ballLength/2 <= cpuPaddle.position.z + paddleLength/2 &&
         ball.position.x >= cpuPaddle.position.x - paddleWidth/2 &&
-        ball.position.x <= cpuPaddle.position.x + paddleWidth/2) {
-            rz = -rz
+        ball.position.x <= cpuPaddle.position.x + paddleWidth/2 &&
+        ball.position.y >= cpuPaddle.position.y - paddleHeight/2 &&
+        ball.position.y <= cpuPaddle.position.y + paddleHeight/2) {
+            let xd = (ball.position.x - cpuPaddle.position.x)/6
+            let xy = (ball.position.y - cpuPaddle.position.y)/4
+            if (xd === 0) {
+                xd = .5 * negatizer()
+            }
+            if (xy === 0) {
+                xy = .5 * negatizer()
+            }
+            let xz = (Math.abs(xd) + Math.abs(xy))
+            let percent = (ballSpeed/(Math.abs(xd)+Math.abs(xy)+xz))
+            rx = xd * percent
+            ry = xy * percent
+            rz = (xz * percent)
+
             playerTurn = true;
         }
     if (ball.position.z >= boardLength/2 || ball.position.z <= -boardLength/2) {
@@ -239,15 +343,18 @@ function ballController() {
         cancelAnimationFrame(animator)
         if (playerScore === 7) {
             displayMessage("YOU WIN")
+            scene.remove(userScore, cpuScore, userPaddle, cpuPaddle)
         } else if (computerScore === 7) {
             displayMessage("YOU LOSE")
+            scene.remove(userScore, cpuScore, userPaddle, cpuPaddle)
         } else {
             setPoint()
             setTimeout(animate, 2000)
         }
     }
         ball.position.x += rx;
-        ball.position.z += rz
+        ball.position.z += rz;
+        ball.position.y += ry;
     }
 
     function displayMessage(display) {
@@ -264,17 +371,38 @@ function ballController() {
         } else {
             message.position.x -= 36
         }
+        message.position.y -= 10
         message.position.z += 60
-        message.rotation.x = -1.5708
         scene.add(message)
     }
 
     function cpuController() {
         if (!playerTurn) {
             if (ball.position.x > cpuPaddle.position.x && cpuPaddle.position.x + paddleWidth/2 <= boardWidth/2) {
-                cpuPaddle.position.x += .8
+                if (ball.position.x < cpuPaddle.position.x + cpuSpeed) {
+                    cpuPaddle.position.x = ball.position.x
+                } else {
+                    cpuPaddle.position.x += cpuSpeed
+                }
             } else if (ball.position.x < cpuPaddle.position.x && cpuPaddle.position.x - paddleWidth/2 >= -(boardWidth/2)) {
-                cpuPaddle.position.x -= .8
+                if (ball.position.x > cpuPaddle.position.x - cpuSpeed) {
+                    cpuPaddle.position.x = ball.position.x
+                } else {
+                    cpuPaddle.position.x -= cpuSpeed
+                }
+            }
+            if (ball.position.y > cpuPaddle.position.y && cpuPaddle.position.y + paddleHeight/2 < wallHeight/2) {
+                if (ball.position.y < cpuPaddle.position.y + cpuSpeed) {
+                    cpuPaddle.position.y = ball.position.y
+                } else {
+                    cpuPaddle.position.y += cpuSpeed
+                }
+            } else if (ball.position.y < cpuPaddle.position.y && cpuPaddle.position.y - paddleHeight/2 > -(wallHeight/2)) {
+                if (ball.position.y > cpuPaddle.position.y - cpuSpeed) {
+                    cpuPaddle.position.y = ball.position.y
+                } else {
+                    cpuPaddle.position.y -= cpuSpeed
+                }
             }
         }
     }

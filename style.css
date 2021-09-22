@@ -1,0 +1,37 @@
+@font-face {
+    font-family: 'blockfont';
+    src: url('./pong2D/FFFFORWA.TTF');
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    height: 100vh;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    font-family: 'blockfont';
+    font-size: 6rem;
+    text-decoration: none;
+}
+
+nav a {
+    text-decoration: none;
+    color: white;
+    user-select: none;
+}
+
+#pong2d:hover {
+    text-shadow: -10px -10px palevioletred;
+}
+
+#pong3d:hover {
+    text-shadow: 10px 10px turquoise;
+}
