@@ -8,7 +8,9 @@ function runGame() {
     // camera.position.z = 110;
     // camera.position.y = 90;
     // camera.position.x = 0;
-    // camera.rotation.x = -.9;
+    // camera.rotation.x = 0;
+    // camera.rotation.z = -1.5708;
+
 
     // player view //
 
@@ -20,6 +22,9 @@ function runGame() {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.setPixelRatio( window.devicePixelRatio );
+    
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     document.body.appendChild( renderer.domElement );
 
@@ -28,13 +33,41 @@ function runGame() {
     const ambientLight = new THREE.AmbientLight( 'white', .7 );
     scene.add( ambientLight);
 
-    const light1 = new THREE.DirectionalLight( returnNeonColor(), .5 );
-    const light2 = new THREE.DirectionalLight( returnNeonColor(), .8 );
+    const light1 = new THREE.DirectionalLight( returnNeonColor(), .3 );
+    const light2 = new THREE.DirectionalLight( returnNeonColor(), .3 );
 
-    light1.position.x = 4
-    light1.position.z = -12
-    light2.position.x = -4
-    light2.position.z = -12
+    light1.position.x = 20
+    light1.position.y = 0
+    light1.position.z = 0
+
+    light2.position.x = -20
+    light2.position.y = 0
+    light2.position.z = 0
+
+
+
+    light1.castShadow = true;
+
+    light1.shadow.mapSize.width = 4000; // default
+    light1.shadow.mapSize.height = 4000; // default
+    light1.shadow.camera.near = 0.5; // default
+    light1.shadow.camera.far = 200; // default
+    light1.shadow.camera.top = 100;
+    light1.shadow.camera.bottom = -100;
+    light1.shadow.camera.left = 100;
+    light1.shadow.camera.right = -100;
+
+    light2.castShadow = true;
+
+    light2.shadow.mapSize.width = 4000; // default
+    light2.shadow.mapSize.height = 4000; // default
+    light2.shadow.camera.near = 0.5; // default
+    light2.shadow.camera.far = 200; // default
+    light2.shadow.camera.top = 100;
+    light2.shadow.camera.bottom = -100;
+    light2.shadow.camera.left = 100;
+    light2.shadow.camera.right = -100;
+
 
 
     scene.add( light1, light2 );
@@ -55,37 +88,37 @@ function runGame() {
     document.addEventListener("keyup", keyUpHandler, false);
 
     function keyDownHandler(e) {
-        if (e.key == "Left" || e.key == "ArrowLeft" || e.key == "KeyA") {
+        if (e.key == "ArrowLeft" || e.key == "a") {
             e.preventDefault()
             leftPressed = true;
         }
-        else if (e.key == "Right" || e.key == "ArrowRight" || e.key == "KeyD") {
+        else if (e.key == "ArrowRight" || e.key == "d") {
             e.preventDefault()
             rightPressed = true;
         } 
-        else if (e.key == "Up" || e.key == "ArrowUp" || e.key == "KeyW") {
+        else if (e.key == "ArrowUp" || e.key == "w") {
             e.preventDefault()
             upPressed = true;
         }
-        else if (e.key == "Down" || e.key == "ArrowDown" || e.key == "KeyS") {
+        else if (e.key == "ArrowDown" || e.key == "s") {
             e.preventDefault()
             downPressed = true;
         }
     }
 
     function keyUpHandler(e) {
-        if (e.key == "Left" || e.key == "ArrowLeft" || e.key == "KeyA") {
+        if (e.key == "ArrowLeft" || e.key == "a") {
             e.preventDefault()
             leftPressed = false;
         }
-        else if (e.key == "Right" || e.key == "ArrowRight" || e.key == "KeyD") {
+        else if (e.key == "ArrowRight" || e.key == "d") {
             e.preventDefault()
             rightPressed = false;
-        } else if (e.key == "Up" || e.key == "ArrowUp" || e.key == "KeyW") {
+        } else if (e.key == "ArrowUp" || e.key == "w") {
             e.preventDefault()
             upPressed = false;
         }
-        else if (e.key == "Down" || e.key == "ArrowDown" || e.key == "KeyS") {
+        else if (e.key == "ArrowDown" || e.key == "s") {
             e.preventDefault()
             downPressed = false;
         }
@@ -172,6 +205,7 @@ function runGame() {
         let wGeometry = new THREE.BoxGeometry(wallWidth, wallHeight, boardLength);
         let wMaterial = new THREE.MeshLambertMaterial( {color: 'white'} )
         let wall = new THREE.Mesh( wGeometry, wMaterial );
+        wall.receiveShadow = true;
         return wall
     }
 
@@ -195,6 +229,7 @@ function runGame() {
         let ballMaterial = new THREE.MeshLambertMaterial( {color: 'white'} )
         ball = new THREE.Mesh( ballGeometry, ballMaterial );
         ball.position.y += ballLength/2
+        ball.castShadow = true
         scene.add( ball )
     }
 
