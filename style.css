@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'blockfont';
-    src: url('./pong2D/FFFFORWA.TTF');
+    src: url('/regFont');
 }
 
 body {
