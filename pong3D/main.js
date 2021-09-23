@@ -55,37 +55,37 @@ function runGame() {
     document.addEventListener("keyup", keyUpHandler, false);
 
     function keyDownHandler(e) {
-        if (e.key == "Left" || e.key == "ArrowLeft") {
+        if (e.key == "Left" || e.key == "ArrowLeft" || e.key == "KeyA") {
             e.preventDefault()
             leftPressed = true;
         }
-        else if (e.key == "Right" || e.key == "ArrowRight") {
+        else if (e.key == "Right" || e.key == "ArrowRight" || e.key == "KeyD") {
             e.preventDefault()
             rightPressed = true;
         } 
-        else if (e.key == "Up" || e.key == "ArrowUp") {
+        else if (e.key == "Up" || e.key == "ArrowUp" || e.key == "KeyW") {
             e.preventDefault()
             upPressed = true;
         }
-        else if (e.key == "Down" || e.key == "ArrowDown") {
+        else if (e.key == "Down" || e.key == "ArrowDown" || e.key == "KeyS") {
             e.preventDefault()
             downPressed = true;
         }
     }
 
     function keyUpHandler(e) {
-        if (e.key == "Left" || e.key == "ArrowLeft") {
+        if (e.key == "Left" || e.key == "ArrowLeft" || e.key == "KeyA") {
             e.preventDefault()
             leftPressed = false;
         }
-        else if (e.key == "Right" || e.key == "ArrowRight") {
+        else if (e.key == "Right" || e.key == "ArrowRight" || e.key == "KeyD") {
             e.preventDefault()
             rightPressed = false;
-        } else if (e.key == "Up" || e.key == "ArrowUp") {
+        } else if (e.key == "Up" || e.key == "ArrowUp" || e.key == "KeyW") {
             e.preventDefault()
             upPressed = false;
         }
-        else if (e.key == "Down" || e.key == "ArrowDown") {
+        else if (e.key == "Down" || e.key == "ArrowDown" || e.key == "KeyS") {
             e.preventDefault()
             downPressed = false;
         }
